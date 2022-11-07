@@ -21,6 +21,9 @@
 #include "pose_graph.h"
 #include "utility/CameraPoseVisualization.h"
 #include "parameters.h"
+
+#include<tf/transform_broadcaster.h> // tf data is published using transform broadcaster
+
 #define SKIP_FIRST_CNT 10
 using namespace std;
 
@@ -200,9 +203,20 @@ void relo_relative_pose_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
 
 void vio_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
 {
-    //ROS_INFO("vio_callback!");
+       //ROS_INFO("vio_callback!");
     Vector3d vio_t(pose_msg->pose.pose.position.x, pose_msg->pose.pose.position.y, pose_msg->pose.pose.position.z);
     Quaterniond vio_q;
+
+     //added new datatypes
+    Vector3d vio_t_optimized(0,0,0);
+    Quaterniond vio_q_optimized;
+    
+    vio_q_optimized.w() = 1.0;
+    vio_q_optimized.x() = 0.0;
+    vio_q_optimized.y() = 0.0;
+    vio_q_optimized.z() = 0.0;
+
+
     vio_q.w() = pose_msg->pose.pose.orientation.w;
     vio_q.x() = pose_msg->pose.pose.orientation.x;
     vio_q.y() = pose_msg->pose.pose.orientation.y;
@@ -218,7 +232,23 @@ void vio_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
     Quaterniond vio_q_cam;
     vio_t_cam = vio_t + vio_q * tic;
     vio_q_cam = vio_q * qic;        
+    //added code for find transformation
+ 
+    vio_t_optimized =  posegraph.r_drift * posegraph.w_t_vio + posegraph.t_drift;
+    vio_q_optimized = posegraph.w_r_vio *  vio_q_optimized;
+    vio_q_optimized = posegraph.r_drift * vio_q_optimized;
 
+    vio_t_optimized = vio_t_optimized + vio_q_optimized *tic;
+    vio_q_optimized = vio_q_optimized *qic;
+
+// addded code for transformation from optimized body frame to world frame 
+    static tf::TransformBroadcaster br;
+    tf::Transform transform;
+    transform.setOrigin(tf::Vector3(vio_t_optimized(0), vio_t_optimized(1), vio_t_optimized(2)));
+    tf::Quaternion q(vio_q_optimized.x(), vio_q_optimized.y(), vio_q_optimized.z(), vio_q_optimized.w());
+    transform.setRotation(q); // set rotation from the current frame to the base frame
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world","optimized_body")); // transform
+/////
     if (!VISUALIZE_IMU_FORWARD)
     {
         cameraposevisual.reset();
