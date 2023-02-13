@@ -1,0 +1,61 @@
+<launch>
+    <include file="$(find vins_estimator)/launch/realsense_color.launch" />
+    
+
+    <!-- PCL Voxel Filter (Downsampling the point cloud)-->
+    <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen" />
+
+  <!-- Run a VoxelGrid filter to clean NaNs and downsample the data -->
+  <!--    <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
+    <remap from="~input" to="/camera/depth/color/points" />
+    <rosparam>
+      filter_field_name: z
+      filter_limit_min: 0.2
+      filter_limit_max: 4
+      filter_limit_negative: False
+      leaf_size: 0.05
+    </rosparam>
+
+    <rosparam>
+      filter_field_name: x
+      filter_limit_min: -4
+      filter_limit_max: 4
+      filter_limit_negative: False
+      leaf_size: 0.05
+    </rosparam>
+
+    <rosparam>
+      filter_field_name: y
+      filter_limit_min: -4
+      filter_limit_max: 4
+      filter_limit_negative: False
+      leaf_size: 0.05
+    </rosparam>
+
+</node> -->
+
+<node pkg="tf" type="static_transform_publisher" name="optimizedTF_broadcaster" args="0 0 0 0 0 0 optimized_body optimized_pc 100" />
+
+
+<!-- transform from local_origin_ned to map-->
+<node pkg="tf" type="static_transform_publisher" name="mapTF_broadcaster" args="0 0 0 0 -1.57 1.57 body camera_link 100" />
+
+    <node pkg="octomap_server" type="octomap_server_node" name="octomap_server">
+        <param name="resolution" value="0.05" />
+        
+        <!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
+        <param name="frame_id" type="string" value="world" />
+        
+        <!-- maximum range to integrate (speedup!) -->
+        <param name="sensor_model/max_range" value="6" />
+        
+        <!-- data source to integrate (PointCloud2) -->
+        
+        <!-- <remap from="cloud_in" to="/voxel_grid/output" /> -->
+        <remap from="cloud_in" to="/camera/depth/color/points"
+ />
+            
+    </node>
+
+
+</launch>

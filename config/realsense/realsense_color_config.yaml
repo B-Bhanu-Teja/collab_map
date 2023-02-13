@@ -1,9 +1,9 @@
 %YAML:1.0
 
 #common parameters
-imu_topic: "/camera/imu/data_raw"
+imu_topic: "/camera/imu"
 image_topic: "/camera/color/image_raw"
-output_path: "/home/tony-ws1/output/"
+output_path: "/home/drone/Documents/collab_map/src/collab_map/output"
 
 #camera calibration 
 model_type: PINHOLE
@@ -11,15 +11,15 @@ camera_name: camera
 image_width: 640
 image_height: 480
 distortion_parameters:
-   k1: 9.2615504465028850e-02
-   k2: -1.8082438825995681e-01
-   p1: -6.5484100374765971e-04
-   p2: -3.5829351558557421e-04
+   k1: -5.3724189966151539e-02
+   k2: 5.7058163239800556e-02
+   p1: 5.0555040878698940e-04
+   p2: 8.4194530686270315e-03
 projection_parameters:
-   fx: 6.0970550296798035e+02
-   fy: 6.0909579671294716e+02
-   cx: 3.1916667152289227e+02
-   cy: 2.3558360480225772e+02
+   fx: 3.7810710451631547e+02
+   fy: 3.7892660566571266e+02
+   cx: 3.3207208780613013e+02
+   cy: 2.4598584034502065e+02
 
 # Extrinsic parameter between IMU and Camera.
 estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
@@ -65,8 +65,8 @@ g_norm: 9.805       # gravity magnitude
 #loop closure parameters
 loop_closure: 1                    # start loop closure
 fast_relocalization: 1             # useful in real-time and large project
-load_previous_pose_graph: 0        # load and reuse previous pose graph; load from 'pose_graph_save_path'
-pose_graph_save_path: "/home/tony-ws1/output/pose_graph/" # save and load path
+load_previous_pose_graph: 1        # load and reuse previous pose graph; load from 'pose_graph_save_path'
+pose_graph_save_path: "/home/drone/Documents/collab_map/src/collab_map/pose_graph/data/night/" # save and load path
 
 #unsynchronization parameters
 estimate_td: 1                      # online estimate time offset between camera and imu
