@@ -23,7 +23,7 @@ tf2_sensor_msgs
 
 add_message_files(
   FILES
-  clusterInfo.msg
+  clusterInfo.msg 
 )
 
 generate_messages(
