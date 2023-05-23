@@ -403,7 +403,20 @@ void process()
             else
                 ptr = cv_bridge::toCvCopy(image_msg, sensor_msgs::image_encodings::MONO8);
             
-            cv::Mat image = ptr->image;
+            // --- Original Code
+            // cv::Mat image = ptr->image;
+
+            // --- Histogram Equilization
+            // cv::Mat src = ptr-> image;
+            // cv::Mat image;
+            // cv::equalizeHist(src, image);
+            
+            // --- CLAHE implementation
+            cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(2.0, cv::Size(8, 8));
+            cv::Mat image;
+            cv::Mat src = ptr-> image;
+            clahe->apply(src, image);
+            
             // build keyframe
             Vector3d T = Vector3d(pose_msg->pose.pose.position.x,
                                   pose_msg->pose.pose.position.y,

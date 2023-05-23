@@ -15,6 +15,8 @@ ros::Publisher pub_keyframe_pose;
 ros::Publisher pub_keyframe_point;
 ros::Publisher pub_extrinsic;
 
+ros::Publisher pub_transform;
+
 CameraPoseVisualization cameraposevisual(0, 1, 0, 1);
 CameraPoseVisualization keyframebasevisual(0.0, 0.0, 1.0, 1.0);
 static double sum_of_path = 0;
@@ -35,6 +37,7 @@ void registerPub(ros::NodeHandle &n)
     pub_keyframe_point = n.advertise<sensor_msgs::PointCloud>("keyframe_point", 1000);
     pub_extrinsic = n.advertise<nav_msgs::Odometry>("extrinsic", 1000);
     pub_relo_relative_pose=  n.advertise<nav_msgs::Odometry>("relo_relative_pose", 1000);
+    pub_transform = n.advertise<geometry_msgs::TransformStamped>("transform", 1000);
 
     cameraposevisual.setScale(1);
     cameraposevisual.setLineWidth(0.05);
@@ -318,6 +321,19 @@ void pubTF(const Estimator &estimator, const std_msgs::Header &header)
     q.setZ(correct_q.z());
     transform.setRotation(q);
     br.sendTransform(tf::StampedTransform(transform, header.stamp, "world", "body"));
+    geometry_msgs::TransformStamped transStamped;
+    transStamped.transform.translation.x = correct_t(0);
+    transStamped.transform.translation.y = correct_t(1);
+    transStamped.transform.translation.z = correct_t(2);
+    
+    transStamped.transform.rotation.w = correct_q.w();
+    transStamped.transform.rotation.x = correct_q.x();
+    transStamped.transform.rotation.y = correct_q.y();
+    transStamped.transform.rotation.z = correct_q.z();
+
+    transStamped.header = header;
+    transStamped.child_frame_id = "body";
+    pub_transform.publish(transStamped);
 
     // camera frame
     transform.setOrigin(tf::Vector3(estimator.tic[0].x(),
