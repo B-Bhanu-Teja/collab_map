@@ -34,12 +34,36 @@ extrinsicRotation: !!opencv-matrix
    data: [ 0.99964621,  0.01105994,  0.02418954,
            -0.01088975,  0.9999151,  -0.00715601, 
            -0.02426663,  0.00689006,  0.99968178]
+
+# Px4 to camera
+# extrinsicRotation: !!opencv-matrix
+#    rows: 3
+#    cols: 3
+#    dt: d
+#    data: [ 0,  -1,  0,
+#            1,  0,  0, 
+#            0,  0,  1]
 #Translation from camera frame to imu frame, imu^T_cam
+# Camera IMU and Camera
 extrinsicTranslation: !!opencv-matrix
    rows: 3
    cols: 1
    dt: d
    data: [0.07494282, -0.01077138, -0.00641822]
+
+# Pixhawk IMU and Camera
+# extrinsicTranslation: !!opencv-matrix
+#    rows: 3
+#    cols: 1
+#    dt: d
+#    data: [-0.1094282, -0.01077138, 0.1641822]
+
+# standard parameters for the Transformation between IMU and Camera
+# extrinsicTranslation: !!opencv-matrix
+#    rows: 3
+#    cols: 1
+#    dt: d
+#    data: [0.07494282, -0.01077138, -0.00641822]
 
 #feature traker paprameters
 max_cnt: 150            # max feature number in feature tracking
