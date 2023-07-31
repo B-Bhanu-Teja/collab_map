@@ -3,6 +3,7 @@
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <visualization_msgs/Marker.h>
@@ -30,6 +31,7 @@ using namespace std;
 queue<sensor_msgs::ImageConstPtr> image_buf;
 queue<sensor_msgs::PointCloudConstPtr> point_buf;
 queue<nav_msgs::Odometry::ConstPtr> pose_buf;
+queue<sensor_msgs::PointCloud2::ConstPtr> point_cloud_buf;
 queue<Eigen::Vector3d> odometry_buf;
 std::mutex m_buf;
 std::mutex m_process;
@@ -113,7 +115,25 @@ void image_callback(const sensor_msgs::ImageConstPtr &image_msg)
     }
     last_image_time = image_msg->header.stamp.toSec();
 }
-
+void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr &pointcloud_msg) 
+{
+    
+    if(!LOOP_CLOSURE)
+        return;
+    m_buf.lock();
+    point_cloud_buf.push(pointcloud_msg);
+    m_buf.unlock();
+    /*
+    for (unsigned int i = 0; i < point_msg->points.size(); i++)
+    {
+        printf("%d, 3D point: %f, %f, %f 2D point %f, %f \n",i , point_msg->points[i].x, 
+                                                     point_msg->points[i].y,
+                                                     point_msg->points[i].z,
+                                                     point_msg->channels[i].values[0],
+                                                     point_msg->channels[i].values[1]);
+    }
+    */
+}
 void point_callback(const sensor_msgs::PointCloudConstPtr &point_msg)
 {
     //ROS_INFO("point_callback!");
@@ -330,11 +350,12 @@ void process()
         sensor_msgs::ImageConstPtr image_msg = NULL;
         sensor_msgs::PointCloudConstPtr point_msg = NULL;
         nav_msgs::Odometry::ConstPtr pose_msg = NULL;
-
+        sensor_msgs::PointCloud2::ConstPtr point_cloud_msg = NULL;
         // find out the messages with same time stamp
         m_buf.lock();
-        if(!image_buf.empty() && !point_buf.empty() && !pose_buf.empty())
+        if(!image_buf.empty() && !point_buf.empty() && !pose_buf.empty() && !point_cloud_buf.empty())
         {
+            printf("starting Sync");
             if (image_buf.front()->header.stamp.toSec() > pose_buf.front()->header.stamp.toSec())
             {
                 pose_buf.pop();
@@ -345,8 +366,14 @@ void process()
                 point_buf.pop();
                 printf("throw point at beginning\n");
             }
+            else if (image_buf.front()->header.stamp.toSec() > point_cloud_buf.front()->header.stamp.toSec())
+            {
+                point_cloud_buf.pop();
+                printf("throw point at beginning\n");
+            }
             else if (image_buf.back()->header.stamp.toSec() >= pose_buf.front()->header.stamp.toSec() 
-                && point_buf.back()->header.stamp.toSec() >= pose_buf.front()->header.stamp.toSec())
+                && point_buf.back()->header.stamp.toSec() >= pose_buf.front()->header.stamp.toSec()
+                && point_cloud_buf.back()->header.stamp.toSec() >= pose_buf.front()->header.stamp.toSec())
             {
                 pose_msg = pose_buf.front();
                 pose_buf.pop();
@@ -361,7 +388,13 @@ void process()
                     point_buf.pop();
                 point_msg = point_buf.front();
                 point_buf.pop();
+
+                while (point_cloud_buf.front()->header.stamp.toSec() < pose_msg->header.stamp.toSec())
+                    point_cloud_buf.pop();
+                point_cloud_msg = point_cloud_buf.front();
+                point_cloud_buf.pop();
             }
+            printf("Syncronisation done!!");
         }
         m_buf.unlock();
 
@@ -442,10 +475,12 @@ void process()
                 }
 
                 KeyFrame* keyframe = new KeyFrame(pose_msg->header.stamp.toSec(), frame_index, T, R, image,
-                                   point_3d, point_2d_uv, point_2d_normal, point_id, sequence);   
+                                   point_3d, point_2d_uv, point_2d_normal, point_id, sequence, *point_cloud_msg);   
                 m_process.lock();
                 start_flag = 1;
+                printf("adding Keyframe");
                 posegraph.addKeyFrame(keyframe, 1);
+                printf("added Keyframe");
                 m_process.unlock();
                 frame_index++;
                 last_t = T;
@@ -475,7 +510,11 @@ void command()
         }
         if (c == 'n')
             new_sequence();
-
+        if(c == 'b')
+        {
+            posegraph.saveBag();
+            printf("save pose graph and pointcloud in bag\n");
+        }
         std::chrono::milliseconds dura(5);
         std::this_thread::sleep_for(dura);
     }
@@ -563,6 +602,7 @@ int main(int argc, char **argv)
     ros::Subscriber sub_extrinsic = n.subscribe("/vins_estimator/extrinsic", 2000, extrinsic_callback);
     ros::Subscriber sub_point = n.subscribe("/vins_estimator/keyframe_point", 2000, point_callback);
     ros::Subscriber sub_relo_relative_pose = n.subscribe("/vins_estimator/relo_relative_pose", 2000, relo_relative_pose_callback);
+    ros::Subscriber pointcloud_sub = n.subscribe("/camera/depth/color/points", 10, point_cloud_callback);
 
     pub_match_img = n.advertise<sensor_msgs::Image>("match_image", 1000);
     pub_camera_pose_visual = n.advertise<visualization_msgs::MarkerArray>("camera_pose_visual", 1000);
