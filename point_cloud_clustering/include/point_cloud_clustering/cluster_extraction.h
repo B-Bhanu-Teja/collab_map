@@ -75,7 +75,7 @@ class ClusterExtraction
     ClusterExtractionParams params;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, cloud_filtered,cloud_pass;
-     pcl::PointCloud<pcl::PointXYZ> cloud_a, cloud_b, cloud_c;
+    pcl::PointCloud<pcl::PointXYZ> cloud_a, cloud_b, cloud_c;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f, cloud_plane;
 
     int avg = 0;

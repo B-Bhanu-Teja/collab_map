@@ -34,8 +34,7 @@
 
 </node> -->
 
-<node pkg="tf" type="static_transform_publisher" name="optimizedTF_broadcaster" args="0 0 0 0 0 0 optimized_body optimized_pc 100" />
-
+<node pkg="tf" type="static_transform_publisher" name="optimizedTF_broadcaster2" args="0 0 0 0 0 0 optimized_body optimized_pc 100" />
 
 <!-- transform from local_origin_ned to map-->
 <node pkg="tf" type="static_transform_publisher" name="mapTF_broadcaster" args="0 0 0 0 -1.57 1.57 body camera_link 100" />
@@ -47,10 +46,10 @@
         <param name="frame_id" type="string" value="world" />
         
         <!-- maximum range to integrate (speedup!) -->
-        <param name="sensor_model/max_range" value="6" />
+        <param name="sensor_model/max_range" value="15" />
         
         <!-- data source to integrate (PointCloud2) -->
-        
+        <!-- <param name="map_file" type="string" value="/home/drone/mapfile.ot"/> -->
         <!-- <remap from="cloud_in" to="/voxel_grid/output" /> -->
         <remap from="cloud_in" to="/camera/depth/color/points"
  />

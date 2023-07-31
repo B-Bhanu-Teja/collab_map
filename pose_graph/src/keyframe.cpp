@@ -13,7 +13,7 @@ static void reduceVector(vector<Derived> &v, vector<uchar> status)
 // create keyframe online
 KeyFrame::KeyFrame(double _time_stamp, int _index, Vector3d &_vio_T_w_i, Matrix3d &_vio_R_w_i, cv::Mat &_image,
 		           vector<cv::Point3f> &_point_3d, vector<cv::Point2f> &_point_2d_uv, vector<cv::Point2f> &_point_2d_norm,
-		           vector<double> &_point_id, int _sequence)
+		           vector<double> &_point_id, int _sequence, sensor_msgs::PointCloud2 _pointcloud)
 {
 	time_stamp = _time_stamp;
 	index = _index;
@@ -25,6 +25,7 @@ KeyFrame::KeyFrame(double _time_stamp, int _index, Vector3d &_vio_T_w_i, Matrix3
 	origin_vio_R = vio_R_w_i;
 	image = _image.clone();
 	cv::resize(image, thumbnail, cv::Size(80, 60));
+	pointcloud = _pointcloud;
 	point_3d = _point_3d;
 	point_2d_uv = _point_2d_uv;
 	point_2d_norm = _point_2d_norm;
