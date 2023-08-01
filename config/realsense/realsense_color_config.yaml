@@ -4,6 +4,10 @@
 imu_topic: "/camera/imu"
 image_topic: "/camera/color/image_raw"
 output_path: "/home/multislam/Documents/collab_map/src/collab_map/output"
+# Change this to the desired location to save the bag file
+output_bag_path: "/home/multislam/Documents/collab_map/src/collab_map/output/bag/file1.bag"
+# Change this to the actual RGBD ROS topic name
+rgbd_topic: "/camera/rgbd_topic"
 
 #camera calibration 
 model_type: PINHOLE
