@@ -66,6 +66,8 @@ nav_msgs::Path no_loop_path;
 
 std::string BRIEF_PATTERN_FILE;
 std::string POSE_GRAPH_SAVE_PATH;
+std::string OUTPUT_BAG_PATH;
+std::string POINT_CLOUD_TOPIC;
 std::string VINS_RESULT_PATH;
 CameraPoseVisualization cameraposevisual(1, 0, 0, 1);
 Eigen::Vector3d last_t(-100, -100, -100);
@@ -525,7 +527,7 @@ void command()
             new_sequence();
         if(c == 'b')
         {
-            posegraph.saveBag();
+            posegraph.saveBag(OUTPUT_BAG_PATH);
             printf("save pose graph and pointcloud in bag\n");
         }
         std::chrono::milliseconds dura(5);
@@ -573,7 +575,9 @@ int main(int argc, char **argv)
         cout << "BRIEF_PATTERN_FILE" << BRIEF_PATTERN_FILE << endl;
         m_camera = camodocal::CameraFactory::instance()->generateCameraFromYamlFile(config_file.c_str());
 
-        fsSettings["image_topic"] >> IMAGE_TOPIC;        
+        fsSettings["image_topic"] >> IMAGE_TOPIC;
+        fsSettings["output_bag_path"] >> OUTPUT_BAG_PATH;
+        fsSettings["rgbd_topic"] >> POINT_CLOUD_TOPIC;         
         fsSettings["pose_graph_save_path"] >> POSE_GRAPH_SAVE_PATH;
         fsSettings["output_path"] >> VINS_RESULT_PATH;
         fsSettings["save_image"] >> DEBUG_IMAGE;
@@ -615,7 +619,7 @@ int main(int argc, char **argv)
     ros::Subscriber sub_extrinsic = n.subscribe("/vins_estimator/extrinsic", 2000, extrinsic_callback);
     ros::Subscriber sub_point = n.subscribe("/vins_estimator/keyframe_point", 2000, point_callback);
     ros::Subscriber sub_relo_relative_pose = n.subscribe("/vins_estimator/relo_relative_pose", 2000, relo_relative_pose_callback);
-    ros::Subscriber pointcloud_sub = n.subscribe("/camera/depth/color/points", 10, point_cloud_callback);
+    ros::Subscriber pointcloud_sub = n.subscribe("POINT_CLOUD_TOPIC", 10, point_cloud_callback);
 
     pub_match_img = n.advertise<sensor_msgs::Image>("match_image", 1000);
     pub_camera_pose_visual = n.advertise<visualization_msgs::MarkerArray>("camera_pose_visual", 1000);
