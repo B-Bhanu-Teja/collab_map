@@ -916,12 +916,12 @@ void PoseGraph::updateKeyFrameLoop(int index, Eigen::Matrix<double, 8, 1> &_loop
     }
 }
 
-void PoseGraph::saveBag()
+void PoseGraph::saveBag(std::string OUTPUT_BAG_PATH)
 {
     m_keyframelist.lock();
     int i = 0;
     rosbag::Bag bag;
-    bag.open("/home/multislam/Documents/Bags/my_bag_2.bag", rosbag::bagmode::Write);
+    bag.open(OUTPUT_BAG_PATH, rosbag::bagmode::Write);
     for (auto it = keyframelist.begin(); it != keyframelist.end(); it++)
     {
         sensor_msgs::PointCloud2 pointcloud_ = (*it)->pointcloud;
